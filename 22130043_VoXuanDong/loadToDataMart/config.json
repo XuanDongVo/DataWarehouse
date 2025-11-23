@@ -1,0 +1,75 @@
+{
+  "database": {
+    "host": "146.190.93.160",
+    "port": 3308,
+    "user": "root",
+    "password": "123456",
+    "database": "control"
+  },
+
+  "control_table": "process_log",
+  "file_log_table": "file_log",
+
+  "jobs": {
+    "LOAD_PRICE_TRENDS": {
+      "process_code": "P8",
+      "source_id": 3,
+      "process_name": "Load Price Trends to Data Mart",
+      "depends_on": [
+        { "process_code": "P7", "source_id": 3 }
+      ],
+      "source_folder": "../../warehouse/data",
+      "mart_database": "mart",
+      "load_tables": [
+        {
+          "file_pattern": "agg_property_price_trends_daily_*.csv",
+          "target_table": "mart.dim_price_trends_daily",
+          "truncate_before": true
+        }
+      ]
+    },
+    "LOAD_SALES_DAILY": {
+      "process_code": "P9",
+      "source_id": 3,
+      "process_name": "Load Sales Daily to Data Mart",
+      "depends_on": [
+        { "process_code": "P7", "source_id": 3}
+      ],
+      "source_folder": "../../warehouse/data",
+      "mart_database": "mart",
+      "load_tables": [
+        {
+          "file_pattern": "agg_property_sales_daily_*.csv",
+          "target_table": "mart.dim_sales_daily",
+          "truncate_before": true
+        }
+      ]
+    },
+    "LOAD_FEATURES_DAILY": {
+      "process_code": "P10",
+      "source_id": 3,
+      "process_name": "Load Features Daily to Data Mart",
+      "depends_on": [
+        { "process_code": "P7", "source_id": 3 }
+      ],
+      "source_folder": "../../warehouse/data",
+      "mart_database": "mart",
+      "load_tables": [
+        {
+          "file_pattern": "agg_property_features_daily_*.csv",
+          "target_table": "mart.dim_property_features_daily",
+          "truncate_before": true
+        }
+      ]
+    }
+  },
+
+  "email": {
+    "smtp_host": "smtp.gmail.com",
+    "smtp_port": 587,
+    "username": "22130049@st.hcmuaf.edu.vn",
+    "password": "mupfdclfculctnka",
+    "sender": "22130049@st.hcmuaf.edu.vn",
+    "receiver": "22130043@st.hcmuaf.edu.vn"
+  }
+}

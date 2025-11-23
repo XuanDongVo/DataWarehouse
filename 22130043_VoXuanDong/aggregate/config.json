@@ -1,0 +1,54 @@
+{
+  "database": {
+    "host": "146.190.93.160",
+    "port": 3308,
+    "user": "root",
+    "password": "123456",
+    "database": "control"
+  },
+
+  "control_table": "process_log",
+
+  "jobs": {
+    "BDS": {
+      "process_code": "P7",
+      "source_id": 3,
+      "depends_on": [
+        { "process_code": "P5", "source_id": 1, "name": "Load BDS to DW" },
+        { "process_code": "P6", "source_id": 2, "name": "Load Chotot to DW" }
+      ],
+      "aggregate_procedure": [
+        "warehouse.sp_aggregate_property_price_trends_daily",
+        "warehouse.sp_aggregate_property_sales_daily", 
+        "warehouse.sp_aggregate_property_features_daily"
+      ],
+      "export_tables": [
+        {
+          "table": "warehouse.agg_property_price_trends_daily",
+          "file": "agg_property_price_trends_daily.csv",
+          "query": "SELECT * FROM warehouse.agg_property_price_trends_daily WHERE DATE(updated_at) = CURDATE()"
+        },
+        {
+          "table": "warehouse.agg_property_sales_daily", 
+          "file": "agg_property_sales_daily.csv",
+          "query": "SELECT * FROM warehouse.agg_property_sales_daily WHERE DATE(updated_at) = CURDATE()"
+        },
+        {
+          "table": "warehouse.agg_property_features_daily",
+          "file": "agg_property_features_daily.csv", 
+          "query": "SELECT * FROM warehouse.agg_property_features_daily WHERE DATE(updated_at) = CURDATE()"
+        }
+      ],
+      "process_name": "BDS Aggregate Daily"
+    }
+  },
+
+  "email": {
+    "smtp_host": "smtp.gmail.com",
+    "smtp_port": 587,
+    "username": "22130049@st.hcmuaf.edu.vn",
+    "password": "mupfdclfculctnka",
+    "sender": "22130049@st.hcmuaf.edu.vn",
+    "receiver": "22130043@st.hcmuaf.edu.vn"
+  }
+}
