@@ -5,6 +5,7 @@ import sys
 import traceback
 from email_utils import send_error_email
 import csv
+import os
 
 class DatabaseLoader:
     """Base class cho các script aggregate - chứa các phương thức chung"""
@@ -17,12 +18,18 @@ class DatabaseLoader:
     def load_config(self):
         """Load JSON config từ file"""
         try:
-            with open("config.json", "r", encoding="utf-8") as f:
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            config_path = os.path.join(base_dir, "config.json")
+
+            if not os.path.exists(config_path):
+                raise FileNotFoundError(f"Config file not found at: {config_path}")
+            with open(config_path, "r", encoding="utf-8") as f:
                 self.cfg = json.load(f)
-                return self.cfg
+            return self.cfg
+
         except Exception as e:
-            print("ERROR: Cannot load config.json")
-            raise e
+            print(f"ERROR: Cannot load config.json — {e}")
+        raise e
 
     def get_connection(self):
         """Kết nối database"""
