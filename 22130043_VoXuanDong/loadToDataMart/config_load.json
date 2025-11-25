@@ -18,7 +18,7 @@
       "depends_on": [
         { "process_code": "P7", "source_id": 3 }
       ],
-      "source_folder": "../../warehouse/data",
+      "source_folder": "/D/DW/warehouse/data",
       "mart_database": "mart",
       "load_tables": [
         {
@@ -35,7 +35,7 @@
       "depends_on": [
         { "process_code": "P7", "source_id": 3}
       ],
-      "source_folder": "../../warehouse/data",
+      "source_folder": "/D/DW/warehouse/data",
       "mart_database": "mart",
       "load_tables": [
         {
@@ -52,7 +52,7 @@
       "depends_on": [
         { "process_code": "P7", "source_id": 3 }
       ],
-      "source_folder": "../../warehouse/data",
+      "source_folder": "/D/DW/warehouse/data",
       "mart_database": "mart",
       "load_tables": [
         {

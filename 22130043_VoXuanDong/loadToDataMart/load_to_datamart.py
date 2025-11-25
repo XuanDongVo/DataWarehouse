@@ -1,6 +1,7 @@
 import sys
 import os
 from datetime import datetime
+import argparse
 
 # Import các loader classes
 from load_price_trends import LoadPriceTrends
@@ -14,7 +15,8 @@ from load_features_daily import LoadFeaturesDaily
 class LoadToDataMart:
     """Class điều phối chạy tất cả 3 processes load data vào Data Mart"""
     
-    def __init__(self):
+    def __init__(self, config_source= "/D/DW/control/config_load.json"):
+        self.config_source = config_source
         self.processes = [
             {"name": "Load Price Trends", "class": LoadPriceTrends, "code": "P8"},
             {"name": "Load Sales Daily", "class": LoadSalesDaily, "code": "P9"}, 
@@ -40,9 +42,9 @@ class LoadToDataMart:
             print("-" * 50)
             
             try:
-                # Tạo instance và chạy
+                # Tạo instance và chạy, truyền config_source xuống loader
                 loader = process_class()
-                success = loader.run()
+                success = loader.run(config_source=self.config_source)
                 
                 if success:
                     success_count += 1
@@ -77,7 +79,13 @@ class LoadToDataMart:
 # ============================================================
 
 if __name__ == "__main__":
-    coordinator = LoadToDataMart()
+    parser = argparse.ArgumentParser(description="Load all Data Mart processes")
+    parser.add_argument('--config', type=str, help='Path to custom config JSON')
+    args = parser.parse_args()
+
+    # Use default config if no config is provided
+    config_source = args.config if args.config else "/D/DW/control/config_load.json"
+    coordinator = LoadToDataMart(config_source=config_source)
     success = coordinator.run_all()
     
     if success:

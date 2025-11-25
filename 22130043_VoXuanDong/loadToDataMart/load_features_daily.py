@@ -12,8 +12,8 @@ class LoadFeaturesDaily(DataMartLoader):
         super().__init__()
         self.JOB_KEY = "LOAD_FEATURES_DAILY"
         
-    def run(self):
-        if not self.initialize("Load Features Daily"):
+    def run(self, config_source="/D/DW/control/config_load.json"):
+        if not self.initialize("Load Features Daily", config_source):
             return False
         
         job_cfg = self.cfg["jobs"][self.JOB_KEY]

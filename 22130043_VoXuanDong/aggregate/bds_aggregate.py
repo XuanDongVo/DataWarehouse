@@ -1,5 +1,6 @@
 import sys
 from database_loader import DatabaseLoader
+import argparse
 
 # ============================================================
 # BDS AGGREGATE - KẾ THỪA TỪ DATABASE LOADER
@@ -15,10 +16,10 @@ class BDSAggregate(DatabaseLoader):
         self.AGGREGATE_PROCEDURE = None
         self.PROCESS_NAME = None
     
-    def run(self):
-        if not self.initialize("BDS"):
+    def run(self, config_source=None):
+        if not self.initialize("BDS",config_source=config_source):
                 return False
-        
+        # 3️ LOAD JOB CONFIG
         job_cfg = self.cfg["jobs"][self.JOB_KEY]
         self.PROCESS_CODE = job_cfg["process_code"]
         self.AGGREGATE_PROCEDURE = job_cfg["aggregate_procedure"]
@@ -30,29 +31,31 @@ class BDSAggregate(DatabaseLoader):
 
         try:
             if depends_on:
+                # 4️ CHECK DEPENDENCIES
                 if not self.check_dependencies(control_table, depends_on, "BDS Aggregate"):
                     print("ERROR: dependency check failed → STOP")
                     return False
-
+            # 5️ CHECK CURRENT PROCESS
             status = self.check_current_process(control_table, self.PROCESS_CODE, source_id)
             if status == "SKIP":
                 print(f"BDS Process {self.PROCESS_CODE} already completed today")
                 return True
-
+             # 6️ INSERT PROCESS START
             self.insert_process_start(control_table, self.PROCESS_CODE, source_id, self.PROCESS_NAME)
             print(f"BDS Process started! process_id = {self.process_id}")
     
-            # 4. Chạy aggregate procedures
+            
             if isinstance(self.AGGREGATE_PROCEDURE, list):
                 print(f"Running {len(self.AGGREGATE_PROCEDURE)} aggregate procedures...")
                 for i, proc in enumerate(self.AGGREGATE_PROCEDURE, 1):
                     print(f"[{i}/{len(self.AGGREGATE_PROCEDURE)}] {proc}")
             else:
                 print(f"Running aggregate procedure: {self.AGGREGATE_PROCEDURE}")
-            
+            # 7️ RUN STORED PROCEDURES
             self.run_stored_procedure(self.AGGREGATE_PROCEDURE)
             print("All aggregate procedures completed successfully!")
-
+                   
+            # 8️ EXPORT DATA
             export_tables = job_cfg.get("export_tables", [])
             if export_tables:
                 from datetime import datetime
@@ -71,7 +74,7 @@ class BDSAggregate(DatabaseLoader):
                     else:
                         print(f"  WARNING: No data to export for {file_name}")
                 print("All data export completed!\n")
-
+            # 9️ UPDATE PROCESS STATUS
             self.update_process_status(control_table, self.process_id, "SUCCESS")
             print("DONE: BDS Aggregate completed successfully!")
             return True
@@ -82,6 +85,7 @@ class BDSAggregate(DatabaseLoader):
             self.handle_error(control_table, self.PROCESS_CODE, error_msg, e)
             return False
         finally:
+            # 10️ CLOSE CONNECTION
             self.close_connection()
 
 
@@ -90,7 +94,13 @@ class BDSAggregate(DatabaseLoader):
 # ============================================================
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Run BDS Aggregate")
+    parser.add_argument('--config', type=str, help='Path to custom config JSON')
+    args = parser.parse_args()
+    
+    # Use default config if no config is provided
+    config_source = args.config if args.config else "/D/DW/control/config_aggregate.json"
     bds_agg = BDSAggregate()
-    success = bds_agg.run()
+    success = bds_agg.run(config_source=config_source)
     if not success:
         sys.exit(1)
